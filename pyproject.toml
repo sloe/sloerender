@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "sloerender"
+version = "0.1.0"
+description = "Rendering code for Slow Motion Rowing slowmotionrowing.com"
+authors = ["Andy Southgate <andy@slowmotionrowing.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+json5 = "^0.9.5"
+pydantic = "^2.7.4"
+python = "^3.12"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
