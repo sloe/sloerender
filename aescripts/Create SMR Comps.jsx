@@ -549,6 +549,8 @@ for (var key in templateComps) {
     }
 }
 
+var eventId = app.project.file.name.split("-")[1].replace(".aep", "");
+var divisionId = app.project.file.name.split("-")[2].replace(".aep", "");
 var subDir = app.project.file.name.split("-")[2].replace(".aep", "");
 var scratchDir = subDir;
 var outputDir = subDir;
@@ -577,6 +579,8 @@ var orderPath = defsDir + "/order.json5";
 var orderData = {
     ae_project: decodeURI(app.project.file.getRelativeURI(smrRoot)),
     ae_version: aftereffects.AfterEffectsVersion,
+    divison: divisionId,
+    event: eventId,
     appearance_order: [],
     location: decodeURI(new File(orderPath).getRelativeURI(smrRoot))
 };
@@ -595,7 +599,6 @@ for (var i = 0; i < renderableComps.length; i++) {
         }
     }
 
-
     var markerTimes = getMarkerTimes(sourceComp.markerProperty);
     var leafName = renderableComps[i].name + ".json5";
     var defPath = defsDir + "/" + leafName;
@@ -604,7 +607,9 @@ for (var i = 0; i < renderableComps.length; i++) {
         ae_comp: renderableComps[i].name,
         ae_project: decodeURI(app.project.file.getRelativeURI(smrRoot)),
         ae_version: aftereffects.AfterEffectsVersion,
+        division: divisionId,
         duration: renderableComps[i].workAreaDuration,
+        event: eventId,
         flags: sourceCompNames[i].split(":")[1],
         frame_rate: renderableComps[i].frameRate,
         height: renderableComps[i].height,

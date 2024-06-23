@@ -1,5 +1,8 @@
 {
+  "clearml_uri": "http://clearml.murgh.net:80",
+  "event": "mays2024",
+  "mlflow_uri": "http://mlflow.murgh.net:80",
   "smr_root": "C:\\smr",
-  "scratch_prores": "F:\\scratch_f\\prores-output",
-  "scratch_output": "D:\\scratch\\ae-output"
+  "smr_scratch_prores": "F:\\scratch_f\\prores-output",
+  "smr_scratch_mp4": "D:\\scratch\\ae-output"
 }

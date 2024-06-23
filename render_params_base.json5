@@ -1,32 +1,36 @@
 {
-  // ae_major_version: Adobe After Effects major version
-  "ae_major_version": "2024",
-  // aerender_path: Path to Adobe After Effects support files
-  "ae_aerender_path": "C:\\Program Files\\Adobe\\Adobe After Effects {ae_major_version}\\Support Files",
-  // image_cache_percent: optional, defaults to 50
-  "ae_image_cache_percent": 50,
-  // max_mem_percent: optional, defaults to 50
-  "ae_max_mem_percent": 50,
-  // close: optional, defaults to PROMPT_TO_SAVE_CHANGES
-  // DO_NOT_SAVE_CHANGES, SAVE_CHANGES or PROMPT_TO_SAVE_CHANGES
-  "ae_close": "DO_NOT_SAVE_CHANGES",
-  // sound_flag: optional, defaults to "-", can be "+" to turn on sound or "-" to mute sound
-  "ae_play_sound": true,
-  // multi_machine_settings: optional, path to the file for multi-machine rendering settings
-  "ae_multi_machine_settings": "",
-  // mfr: optional, multi-frame rendering setting
-  "ae_mfr": true,
-  "ae_mfr_max_cpu_percent": "100",
-  "ae_render_settings_template": "Best Settings",
-  "ae_output_module_template": "Sloe ProRes",
-  // bitrate: optional, specify either quality or bitrate. Measured in kbps.
-  "hb_bitrate": 60000,
-  // audio_bitrate: optional, defaults to 160. Measured in kbps.
-  "hb_audio_bitrate": 128,
-  // audio_sample_rate: optional, defaults to "auto". Allowed: 4.0-48.0 or "auto".
-  "hb_audio_sample_rate": "48.0",
-  // encoder: optional, specify the encoder to be used for the output file.
-  "hb_encoder": "nvenc_h265",
-  // encoder_preset: optional, specify the preset for the encoder.
-  "hb_encoder_preset": "quality"
+  "ae": {
+    // major_version: Adobe After Effects major version
+    "major_version": "2024",
+    // aerender_path: Path to Adobe After Effects support files
+    "aerender_path": "C:\\Program Files\\Adobe\\Adobe After Effects {ae.major_version}\\Support Files",
+    // image_cache_percent: optional, defaults to 50
+    "image_cache_percent": 50,
+    // max_mem_percent: optional, defaults to 50
+    "max_mem_percent": 50,
+    // close: optional, defaults to PROMPT_TO_SAVE_CHANGES
+    // DO_NOT_SAVE_CHANGES, SAVE_CHANGES or PROMPT_TO_SAVE_CHANGES
+    "close": "DO_NOT_SAVE_CHANGES",
+    // play_sound: optional, defaults to "-", can be "+" to turn on sound or "-" to mute sound
+    "play_sound": true,
+    // multi_machine_settings: optional, path to the file for multi-machine rendering settings
+    "multi_machine_settings": "",
+    // mfr: optional, multi-frame rendering setting
+    "mfr": true,
+    "mfr_max_cpu_percent": "100",
+    "render_settings_template": "Best Settings",
+    "output_module_template": "Sloe ProRes"
+  },
+  "hb": {
+    // bitrate: optional, specify either quality or bitrate. Measured in kbps.
+    "bitrate": 60000,
+    // audio_bitrate: optional, defaults to 160. Measured in kbps.
+    "audio_bitrate": 128,
+    // audio_sample_rate: optional, defaults to "auto". Allowed: 4.0-48.0 or "auto".
+    "audio_sample_rate": "48.0",
+    // encoder: optional, specify the encoder to be used for the output file.
+    "encoder": "nvenc_h265",
+    // encoder_preset: optional, specify the preset for the encoder.
+    "encoder_preset": "quality"
+  }
 }
