@@ -1,8 +1,10 @@
+import datetime
 import logging
 import os
 import re
 import time
 
+import psutil
 from pydantic import BaseModel
 
 import item_params
@@ -27,6 +29,8 @@ class RenderJob:
         self.job_name = job_name
         self.params = params
 
+        self.ae_child_pids = None
+        self.start_time = None
         self.last_frame_time = None
         self.frame_interval_moving_average = 0.0
 
@@ -58,14 +62,16 @@ class RenderJob:
             ]
 
         aerender = process_wrapper.ProcessWrapper(aerender_command)
+        self.ae_child_pids = []
         aerender.run()
+        self.start_time = time.monotonic()
         try:
             while aerender.is_alive():
                 self.service_job(aerender)
-                time.sleep(0.1)
+                time.sleep(0.5)
 
         except (Exception, KeyboardInterrupt) as exp:
-            aerender.kill()
+            aerender.kill(extra_pids=self.ae_child_pids)
             raise
 
         self.service_job(aerender)
@@ -78,14 +84,29 @@ class RenderJob:
 
     def handle_new_frame(self, seconds, time_str, frame_num):
         if self.last_frame_time is not None:
+            elapsed_str = str(datetime.timedelta(seconds=int(time.monotonic() - self.start_time)))
             frame_interval = seconds - self.last_frame_time
             self.frame_interval_moving_average = 0.9 * self.frame_interval_moving_average + 0.1 * frame_interval
             Trackers.report_scalar("Render performance", "After Effects frame render time", frame_interval,
                                    frame_num)
             Trackers.report_scalar("Render performance", "After Effects frame render time moving average",
                                    self.frame_interval_moving_average, frame_num)
-            if (frame_num % 100) == 0:
-                LOGGER.info("%s frame %d average render time: %.3fs", self.job_name, self.frame_interval_moving_average)
+            if (frame_num % 100) == 0 or frame_num == 10:
+                LOGGER.info("Elapsed %s frame %d avg: %.3fs/frame: %s",
+                            elapsed_str,
+                            frame_num,
+                            self.frame_interval_moving_average,
+                            self.job_name)
+                for ae_pid in self.ae_child_pids:
+                    try:
+                        process = psutil.Process(ae_pid)
+                        cpu_times = process.cpu_times()
+                        cpu_user_str = str(datetime.timedelta(seconds=int(cpu_times.user)))
+                        cpu_system_str = str(datetime.timedelta(seconds=int(cpu_times.system)))
+                        LOGGER.info("CPU times of After Effects process with pid %s: user=%s, system=%s", ae_pid,
+                                    cpu_user_str, cpu_system_str)
+                    except (psutil.NoSuchProcess, ProcessLookupError):
+                        LOGGER.info("After Effects process with PID %s no longer active", ae_pid)
 
         self.last_frame_time = seconds
 
@@ -103,6 +124,11 @@ class RenderJob:
                     LOGGER.info(line)
             else:
                 LOGGER.info(f"{stream_label}: {line}")
+
+        ae_pids = aerender.capture_child_pids(r'After\s*(Effects|FX)')
+        for ae_pid in [x for x in ae_pids if x not in self.ae_child_pids]:
+            LOGGER.info("Captured new After Effects process with PID %d", ae_pid)
+            self.ae_child_pids.append(ae_pid)
 
     def execute(self):
         self.do_aerender()

@@ -1,5 +1,6 @@
 import logging
 import queue
+import re
 import subprocess
 import threading
 import time
@@ -39,27 +40,58 @@ class ProcessWrapper:
         stdout_thread.join()
         stderr_thread.join()
 
-    def kill(self):
-        """Kill the running process"""
+    def kill(self, extra_pids=None):
+        """Kill the running processes"""
+        pid_list = []
+
         if self.process:
             LOGGER.info("Killing process tree with pid: %s", self.process.pid)
-            parent = psutil.Process(self.process.pid)
-            for child in parent.children(recursive=True):
-                try:
-                    child.kill()
-                    time.sleep(0.5)
-                    LOGGER.info("Killed child process with pid %s", child.pid)
-                except (psutil.NoSuchProcess, ProcessLookupError):
-                    LOGGER.info("Child process with pid %s no longer active", child.pid)
+            pid_list.append(self.process.pid)
+
+        if extra_pids:
+            pid_list += extra_pids
+
+        for pid in set(pid_list):
             try:
-                parent.kill()
-                LOGGER.info("Killed parent process with pid %s", child.pid)
+                parent = psutil.Process(pid)
+
+                for child in parent.children(recursive=True):
+                    try:
+                        child.kill()
+                        time.sleep(0.5)
+                        LOGGER.info("Killed child process with pid %s", child.pid)
+                    except (psutil.NoSuchProcess, ProcessLookupError):
+                        LOGGER.info("Child process with pid %s no longer active", child.pid)
+                try:
+                    parent.kill()
+                    LOGGER.info("Killed parent process with pid %s", child.pid)
+                except (psutil.NoSuchProcess, ProcessLookupError):
+                    LOGGER.info("Parent process with pid %s no longer active", child.pid)
+
             except (psutil.NoSuchProcess, ProcessLookupError):
-                LOGGER.info("Parent process with pid %s no longer active", child.pid)
+                LOGGER.info("Process pid %s not available", pid)
 
     def run(self):
         LOGGER.info("Executing command: %s", " ".join(self.command))
         self.thread.start()
+
+    def capture_child_pids(self, process_name):
+        result = []
+        if self.process and self.process.pid:
+            try:
+                parent = psutil.Process(self.process.pid)
+
+                for child in parent.children(recursive=True):
+                    try:
+                        if re.search(process_name, child.name()):
+                            result.append(child.pid)
+                    except (psutil.NoSuchProcess, ProcessLookupError):
+                        LOGGER.info("Child process with pid %s no longer active", child.pid)
+
+            except (psutil.NoSuchProcess, ProcessLookupError):
+                LOGGER.info("Process pid %s not available", pid)
+
+        return result
 
     def is_alive(self):
         return self.thread.is_alive()
