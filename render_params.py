@@ -1,12 +1,13 @@
 from typing import Optional
 
 import json5
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class AdobeAfterEffectsSettings(BaseModel):
+    model_config = ConfigDict(extra='forbid')
     major_version: str
-    aerender_path: str
+    aerender_dir: str
     image_cache_percent: Optional[int] = 50
     max_mem_percent: Optional[int] = 50
     close: Optional[str] = "PROMPT_TO_SAVE_CHANGES"
@@ -19,14 +20,17 @@ class AdobeAfterEffectsSettings(BaseModel):
 
 
 class HandbrakeSettings(BaseModel):
+    model_config = ConfigDict(extra='forbid')
     bitrate: Optional[int] = 60000
     audio_bitrate: Optional[int] = 320
     audio_sample_rate: Optional[str] = "auto"
     encoder: Optional[str] = "nvenc_h265"
     encoder_preset: Optional[str] = "quality"
+    hb_dir: str
 
 
 class RenderParams(BaseModel):
+    model_config = ConfigDict(extra='forbid')
     ae: AdobeAfterEffectsSettings
     hb: HandbrakeSettings
 

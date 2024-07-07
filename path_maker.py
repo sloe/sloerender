@@ -79,12 +79,17 @@ class PathMaker:
     def item_ae_project_path(self, item_ae_project_path):
         return os.path.join(self.env['smr_root'], item_ae_project_path)
 
-    def final_path(self, name, event_name=None, division_name=None, variant_name=None):
+    def final_path(self, name, event_name=None, division_name=None, variant_name=None, mkdir=False):
         variant = self.get_variant(variant_name)
         if variant:
-            return os.path.join(self.final_dir(event_name, division_name), f'{name}-{variant}.mp4')
+            final_path = os.path.join(self.final_dir(event_name, division_name), f'{name}-{variant}.mp4')
         else:
-            return os.path.join(self.final_dir(event_name, division_name), f'{name}.mp4')
+            final_path = os.path.join(self.final_dir(event_name, division_name), f'{name}.mp4')
+
+        if mkdir:
+            os.makedirs(os.path.dirname(final_path), exist_ok=True)
+
+        return final_path
 
     def prores_path(self, name, event_name=None, division_name=None, variant_name=None, mkdir=False):
         variant = self.get_variant(variant_name)
@@ -96,7 +101,5 @@ class PathMaker:
 
         if mkdir:
             os.makedirs(os.path.dirname(prores_path), exist_ok=True)
-        return prores_path
 
-    def mp4_path(self, name, event_name=None, division_name=None, variant_name=None):
-        assert (False)
+        return prores_path

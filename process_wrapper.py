@@ -64,9 +64,9 @@ class ProcessWrapper:
                         LOGGER.info("Child process with pid %s no longer active", child.pid)
                 try:
                     parent.kill()
-                    LOGGER.info("Killed parent process with pid %s", child.pid)
+                    LOGGER.info("Killed parent process with pid %s", pid)
                 except (psutil.NoSuchProcess, ProcessLookupError):
-                    LOGGER.info("Parent process with pid %s no longer active", child.pid)
+                    LOGGER.info("Parent process with pid %s no longer active", pid)
 
             except (psutil.NoSuchProcess, ProcessLookupError):
                 LOGGER.info("Process pid %s not available", pid)
@@ -86,10 +86,10 @@ class ProcessWrapper:
                         if re.search(process_name, child.name()):
                             result.append(child.pid)
                     except (psutil.NoSuchProcess, ProcessLookupError):
-                        LOGGER.info("Child process with pid %s no longer active", child.pid)
+                        LOGGER.info("Capture: Child process with pid %s no longer active", child.pid)
 
             except (psutil.NoSuchProcess, ProcessLookupError):
-                LOGGER.info("Process pid %s not available", pid)
+                LOGGER.info("Capture: Process pid %s not available", self.process.pid)
 
         return result
 
@@ -98,6 +98,7 @@ class ProcessWrapper:
 
     def get_return_code(self):
         if self.process:
+            self.process.wait()  # Waiting sets the return code
             rc = self.process.returncode
             if rc is None:
                 time.sleep(1.0)

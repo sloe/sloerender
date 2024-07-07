@@ -2,6 +2,7 @@ import argparse
 import logging
 
 import division_order
+import file_scanner
 import item_params
 import output_params
 import path_maker
@@ -38,8 +39,25 @@ class Render:
                 clearml_task.connect(render_job_p.dict())
 
                 LOGGER.info(f"Starting job: Render {item_p.item_name}")
-                job = render_job.RenderJob(self.path_maker, f"Render {item_p.item_name}", render_job_p)
-                job.execute()
+
+                final_path = self.path_maker.final_path(item_p.item_name)
+                final_scan = file_scanner.FileScanner(final_path, f"Output file prescan {item_p.item_name}",
+                                                      render_job_p)
+                final_scan_result = final_scan.scan_video()
+
+                if final_scan_result['valid'] and not self.options.force_final and not self.options.force_prores:
+                    LOGGER.info("%s", final_scan_result['message'])
+                else:
+                    job = render_job.RenderJob(self.path_maker, f"Render {item_p.item_name}", render_job_p)
+                    prores_scan_result, final_scan_result = job.execute(force_final=self.options.force_final,
+                                                                        force_prores=self.options.force_prores)
+                    if prores_scan_result:
+                        clearml_task.connect(prores_scan_result, name="ProRes file")
+                    if final_scan_result:
+                        clearml_task.connect(final_scan_result, name="Output file")
+            except Exception as exc:
+                clearml_task.mark_failed(status_message=str(exc), force=True)
+                raise
             finally:
                 clearml_task.close()
 
@@ -74,6 +92,14 @@ class Render:
         parser.add_argument('--event',
                             default=None,
                             help='Event name, e.g. mays2024')
+
+        parser.add_argument('--force-final',
+                            action='store_true',
+                            help='Force generation of the final file even if it is already present')
+        parser.add_argument('--force-prores',
+                            action='store_true',
+                            help='Force generation of the prores file even if it is already present')
+
         parser.add_argument('--include',
                             default='.*',
                             help='Filter regexp to select the names of items to be rendered')

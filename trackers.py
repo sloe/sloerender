@@ -16,7 +16,7 @@ class NullClass:
 
 
 class Trackers:
-    ENABLED = False
+    ENABLED = True
 
     @classmethod
     def init_clearml(cls, clearml_uri):

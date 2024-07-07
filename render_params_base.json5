@@ -2,8 +2,8 @@
   "ae": {
     // major_version: Adobe After Effects major version
     "major_version": "2024",
-    // aerender_path: Path to Adobe After Effects support files
-    "aerender_path": "C:\\Program Files\\Adobe\\Adobe After Effects {ae.major_version}\\Support Files",
+    // aerender_dir: Path to Adobe After Effects support files
+    "aerender_dir": "C:\\Program Files\\Adobe\\Adobe After Effects {ae.major_version}\\Support Files",
     // image_cache_percent: optional, defaults to 50
     "image_cache_percent": 50,
     // max_mem_percent: optional, defaults to 50
@@ -25,12 +25,12 @@
     // bitrate: optional, specify either quality or bitrate. Measured in kbps.
     "bitrate": 60000,
     // audio_bitrate: optional, defaults to 160. Measured in kbps.
-    "audio_bitrate": 128,
-    // audio_sample_rate: optional, defaults to "auto". Allowed: 4.0-48.0 or "auto".
-    "audio_sample_rate": "48.0",
+    "audio_bitrate": 320,
     // encoder: optional, specify the encoder to be used for the output file.
     "encoder": "nvenc_h265",
     // encoder_preset: optional, specify the preset for the encoder.
-    "encoder_preset": "quality"
+    "encoder_preset": "quality",
+    // Directory contanin HanlebrakeCLI.exe
+    "hb_dir": "C:\\Program Files\\Handbrake"
   }
 }
