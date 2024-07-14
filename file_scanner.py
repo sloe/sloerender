@@ -9,7 +9,7 @@ from datetime import datetime
 import process_wrapper
 
 LOGGER = logging.getLogger('file_scanner')
-logging.basicConfig(level=logging.DEBUG)
+LOGGER.setLevel(level=logging.DEBUG)
 
 
 class FileScanner:

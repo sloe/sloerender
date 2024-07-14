@@ -4,7 +4,7 @@ import os
 import json5
 
 LOGGER = logging.getLogger('path_maker')
-logging.basicConfig(level=logging.DEBUG)
+LOGGER.setLevel(level=logging.DEBUG)
 
 
 class PathMaker:

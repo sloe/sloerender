@@ -17,7 +17,7 @@ import render_params
 from trackers import Trackers
 
 LOGGER = logging.getLogger('render_job')
-logging.basicConfig(level=logging.DEBUG)
+LOGGER.setLevel(level=logging.DEBUG)
 
 
 class RenderJobParams(BaseModel):
@@ -111,7 +111,7 @@ class RenderJob:
                             frame_num,
                             self.frame_interval_moving_average,
                             self.job_name)
-                for ae_pid in self.ae_child_pids:
+                for i, ae_pid in enumerate(self.ae_child_pids):
                     try:
                         process = psutil.Process(ae_pid)
                         cpu_times = process.cpu_times()
@@ -119,8 +119,17 @@ class RenderJob:
                         cpu_system_str = str(datetime.timedelta(seconds=int(cpu_times.system)))
                         LOGGER.info("CPU times of After Effects process with pid %s: user=%s, system=%s", ae_pid,
                                     cpu_user_str, cpu_system_str)
+                        Trackers.report_scalar("CPU cumulative time",
+                                               "After Effects User CPU seconds",
+                                               cpu_times.user,
+                                               frame_num)
+                        Trackers.report_scalar("CPU cumulative time",
+                                               "After Effects System CPU seconds",
+                                               cpu_times.system,
+                                               frame_num)
                     except (psutil.NoSuchProcess, ProcessLookupError):
                         LOGGER.info("After Effects process with PID %s no longer active", ae_pid)
+                        del self.ae_child_pids[i]
 
         self.last_frame_time = seconds
 
@@ -255,7 +264,12 @@ class RenderJob:
         self.prores_scan_result = self.scan_prores()
 
         if not self.prores_scan_result['valid']:
-            raise Exception(f"Failed to create valid ProRes file: {self.prores_scan_result['message']}")
+            LOGGER.error(f"Failed to create valid ProRes file (retrying): {self.prores_scan_result['message']}")
+            self.do_aerender()
+            self.prores_scan_result = self.scan_prores()
+            if not self.prores_scan_result['valid']:
+                raise Exception(
+                    f"Failed to create valid ProRes file (second attempt): {self.prores_scan_result['message']}")
 
         self.final_scan_result = self.scan_final()
 

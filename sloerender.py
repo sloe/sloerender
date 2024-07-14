@@ -1,6 +1,7 @@
 import argparse
 import logging
 import re
+import traceback
 
 import wakepy
 
@@ -14,7 +15,7 @@ import render_params
 from trackers import Trackers
 
 LOGGER = logging.getLogger('render')
-logging.basicConfig(level=logging.DEBUG)
+LOGGER.setLevel(level=logging.DEBUG)
 logging.getLogger("wakepy").setLevel(logging.INFO)
 
 
@@ -30,7 +31,7 @@ class Render:
         if self.options.reverse:
             filtered_order.reverse()
 
-        LOGGER.info("Will potentially render:\n\n%s\n\nStopping after: %s",
+        LOGGER.info("Will potentially render:\n\n  %s\n\nStopping after: %s",
                     "\n  ".join(x['name'] for x in filtered_order),
                     self.options.stop_after
                     )
@@ -63,19 +64,19 @@ class Render:
                     enabled=self.path_maker.env['clearml_enabled'],
                     project_name=self.path_maker.project_name(),
                     reuse_trackers=self.options.reuse_trackers,
-                    task_name=f"Render {item_p.item_name}",
+                    task_name=f"{item_p.item_name}",
                 )
                 mlflow_task = Trackers.mlflow_task_init(
                     enabled=self.path_maker.env['mlflow_enabled'],
                     project_name=self.path_maker.project_name(),
                     reuse_trackers=self.options.reuse_trackers,
-                    task_name=f"Render {item_p.item_name}",
+                    task_name=f"{item_p.item_name}",
                 )
                 try:
                     clearml_task.connect(render_job_p.dict())
                     mlflow_task.connect(render_job_p.dict())
                     LOGGER.info(f"Starting job: Render {item_p.item_name}")
-                    job = render_job.RenderJob(self.path_maker, f"Render {item_p.item_name}", render_job_p)
+                    job = render_job.RenderJob(self.path_maker, f"{item_p.item_name}", render_job_p)
                     prores_scan_result, final_scan_result = job.execute(force_final=self.options.force_final,
                                                                         force_prores=self.options.force_prores)
                     if prores_scan_result:
@@ -85,8 +86,10 @@ class Render:
                         clearml_task.connect(final_scan_result, name="Output file")
                         mlflow_task.connect(final_scan_result, name="Output file")
                 except (Exception, KeyboardInterrupt) as exc:
-                    clearml_task.mark_failed(status_message=str(exc), force=True)
-                    mlflow_task.mark_failed(status_message=str(exc), force=True)
+                    clearml_task.mark_failed(status_message="".join(traceback.format_exception_only(exc)).strip(),
+                                             force=True)
+                    mlflow_task.mark_failed(status_message="".join(traceback.format_exception_only(exc)).strip(),
+                                            force=True)
                     raise
                 finally:
                     clearml_task.close()
@@ -155,11 +158,13 @@ class Render:
 
         # Set logging level
         if self.options.debug:
-            LOGGER.setLevel(logging.DEBUG)
+            logging.setLevel(logging.DEBUG)
 
 
 if __name__ == '__main__':
-    LOGGER.setLevel(logging.INFO)
+    logging.basicConfig(format='%(asctime)s.%(msecs)03d %(name)s:%(levelname)s:%(message)s',
+                        datefmt='%H:%M:%S',
+                        level=logging.INFO)
     with wakepy.keep.running(on_fail="warn"):
         app = Render()
         app.parse_args()

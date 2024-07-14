@@ -5,7 +5,7 @@ import mlflow
 import mlflow.entities
 
 LOGGER = logging.getLogger('trackers')
-logging.basicConfig(level=logging.DEBUG)
+LOGGER.setLevel(level=logging.DEBUG)
 logging.getLogger("urllib3").setLevel(logging.INFO)
 
 
@@ -127,5 +127,5 @@ class Trackers:
 
         if cls.MLFLOW_ENABLED:
             mlflow.log_metric(
-                key=title, value=value
+                key=f"{title}/{series}", value=value
             )

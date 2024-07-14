@@ -8,7 +8,7 @@ import time
 import psutil
 
 LOGGER = logging.getLogger('process_wrapper')
-logging.basicConfig(level=logging.DEBUG)
+LOGGER.setLevel(level=logging.DEBUG)
 
 
 class ProcessWrapper:
