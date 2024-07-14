@@ -66,13 +66,13 @@ class Render:
                     enabled=self.path_maker.env['clearml_enabled'],
                     project_name=self.path_maker.env['project_prefix'] + self.path_maker.project_name(),
                     reuse_trackers=self.options.reuse_trackers,
-                    task_name=f"{item_p.item_name}",
+                    task_name=f"{self.path_maker.env['run_prefix']}{item_p.item_name}",
                 )
                 mlflow_task = Trackers.mlflow_task_init(
                     enabled=self.path_maker.env['mlflow_enabled'],
-                    project_name=self.path_maker.project_name(),
+                    project_name=self.path_maker.env['project_prefix'] + self.path_maker.project_name(),
                     reuse_trackers=self.options.reuse_trackers,
-                    task_name=f"{item_p.item_name}",
+                    task_name=f"{self.path_maker.env['run_prefix']}{item_p.item_name}",
                 )
                 try:
                     clearml_task.connect(render_job_p.dict())

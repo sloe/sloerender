@@ -4,7 +4,8 @@
   "event": "mays2024",
   "mlflow_enabled": true,
   "mlflow_uri": "http://mlflow.murgh.net:80",
-  "project_prefix": "herif-",
+  "project_prefix": "",
+  "run_prefix": "herif-",
   "smr_root": "C:\\smr",
   "smr_scratch_prores": "F:\\scratch_f\\prores-output",
   "smr_scratch_mp4": "D:\\scratch\\ae-output"
