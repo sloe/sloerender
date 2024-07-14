@@ -75,7 +75,7 @@ class FileScanner:
                 message=f"File {self.file_path} is present and valid"
             ))
         else:
-            LOGGER.error(f"+++RETURN CODE {rc}: {self.job_name}")
+            LOGGER.error(f"+++RETURN CODE %s: %s", rc, self.job_name)
             self.file_data.update(dict(
                 valid=False,
                 result='INVALID',

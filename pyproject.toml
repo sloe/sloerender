@@ -13,6 +13,7 @@ nvidia-ml-py = "^12.555.43"
 psutil = "^6.0.0"
 pydantic = "^2.7.4"
 python = "^3.12"
+wakepy = "^0.9.1"
 
 [build-system]
 requires = ["poetry-core"]

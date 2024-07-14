@@ -92,7 +92,7 @@ class RenderJob:
         if rc == 0:
             LOGGER.info(f"Successful: {self.job_name}")
         else:
-            LOGGER.error(f"+++RETURN CODE {rc}: {self.job_name}")
+            LOGGER.error(f"+++RETURN CODE %s: %s", rc, self.job_name)
             raise Exception(f"AE render process exited with rc={rc}")
 
     def handle_new_frame(self, seconds, time_str, frame_num):
@@ -186,9 +186,8 @@ class RenderJob:
         rc = handbrakecli.get_return_code()
         if rc == 0:
             LOGGER.info(f"Successful: {self.job_name}")
-
         else:
-            LOGGER.error(f"+++RETURN CODE {rc}: {self.job_name}")
+            LOGGER.error(f"+++RETURN CODE %s: %s", rc, self.job_name)
             raise Exception(f"HandBrakeCLI process exited with rc={rc}")
 
     def handle_handbrakecli_progress(self, progress):

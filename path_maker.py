@@ -39,7 +39,6 @@ class PathMaker:
 
     def project_name(self):
         project_elements = [
-            'project',
             self.get_event(),
             self.get_division()
         ]
