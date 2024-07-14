@@ -64,7 +64,7 @@ class Render:
                 clearml_task = Trackers.clearml_task_init(
                     auto_resource_monitoring=dict(report_frequency_sec=5.0),
                     enabled=self.path_maker.env['clearml_enabled'],
-                    project_name=self.path_maker.project_name(),
+                    project_name=self.path_maker.env['project_prefix'] + self.path_maker.project_name(),
                     reuse_trackers=self.options.reuse_trackers,
                     task_name=f"{item_p.item_name}",
                 )
