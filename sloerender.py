@@ -1,6 +1,8 @@
 import argparse
 import logging
+import os.path
 import re
+import socket
 import traceback
 
 import wakepy
@@ -102,7 +104,10 @@ class Render:
                     break
 
     def prepare_env(self):
-        self.path_maker = path_maker.PathMaker(self.options.env_filepath)
+        env_filepath = f"{socket.gethostname()}-{self.options.env_filepath}"
+        if not os.path.isfile(env_filepath):
+            env_filepath = self.options.env_filepath
+        self.path_maker = path_maker.PathMaker(env_filepath)
         if self.options.event:
             self.path_maker.set_default_event(self.options.event)
         if self.options.division:

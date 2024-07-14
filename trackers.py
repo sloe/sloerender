@@ -89,7 +89,15 @@ class Trackers:
         else:
             mlflow.autolog()
             experiment = mlflow.get_experiment_by_name(project_name)
-            if experiment:
+            if experiment and experiment.lifecycle_stage == 'deleted':
+                raise Exception(
+                    f"Colliding deleted experiment with ID {experiment.experiment_id}.  See script comments for remedy")
+                # Find the running mlflow server container
+                # docker exec -it <container-name-or-id> bash
+                # ps axfwww to find the running --backend-store-uri
+                # mlflow gc --backend-storage-uri=<from above> --experiment-ids=<experiment ID>
+
+            if experiment and experiment.lifecycle_stage == 'active':
                 experiment_id = experiment.experiment_id
             else:
                 LOGGER.info("Creating new MLflow experiment %s", project_name)
