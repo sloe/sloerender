@@ -85,7 +85,7 @@ class Trackers:
             cls.MLFLOW_ENABLED = enabled
 
         if not cls.MLFLOW_ENABLED:
-            return NullClass
+            return NullClass()
         else:
             mlflow.autolog()
             experiment = mlflow.get_experiment_by_name(project_name)

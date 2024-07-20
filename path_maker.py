@@ -80,7 +80,7 @@ class PathMaker:
 
     def final_path(self, name, event_name=None, division_name=None, variant_name=None, mkdir=False):
         variant = self.get_variant(variant_name)
-        if variant:
+        if self.env['variant_has_suffix'] and variant:
             final_path = os.path.join(self.final_dir(event_name, division_name), f'{name}-{variant}.mp4')
         else:
             final_path = os.path.join(self.final_dir(event_name, division_name), f'{name}.mp4')

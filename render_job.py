@@ -156,7 +156,7 @@ class RenderJob:
     def do_hbrender(self):
 
         prores_path = self.path_maker.prores_path(self.params.item.item_name)
-        final_path = self.path_maker.final_path(self.params.item.item_name)
+        final_path = self.path_maker.final_path(self.params.item.item_name, mkdir=True)
         LOGGER.info(f"Launching HandBrakeCLI to render %s from %s", final_path, prores_path)
 
         hb_path = os.path.join(self.params.render.hb.hb_dir, 'HandBrakeCLI.exe')

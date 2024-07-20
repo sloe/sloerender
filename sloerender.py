@@ -52,7 +52,7 @@ class Render:
             render_p = render_params.RenderParams.from_json5(self.options.render_params_base)
             render_job_p = render_job.RenderJobParams(item=item_p, output=output_p, render=render_p)
 
-            final_path = self.path_maker.final_path(item_p.item_name)
+            final_path = self.path_maker.final_path(item_p.item_name, mkdir=True)
             final_scan = file_scanner.FileScanner(final_path, f"Output file prescan {item_p.item_name}",
                                                   render_job_p)
             final_scan_result = final_scan.scan_video()
