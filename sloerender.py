@@ -40,7 +40,7 @@ class Render:
 
         for order_num, order_item in enumerate(filtered_order):
             if self.options.stop_after:
-                if re.match(r'[0-9]+$', self.options.stop_after):
+                if re.match(r'^[0-9]+$', self.options.stop_after):
                     if order_num >= int(self.options.stop_after):
                         LOGGER.info("Stopping after %d items due to --stop-after %s", order_num,
                                     self.options.stop_after)

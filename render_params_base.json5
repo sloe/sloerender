@@ -1,7 +1,7 @@
 {
   "ae": {
     // major_version: Adobe After Effects major version
-    "major_version": "2024",
+    "major_version": "2025",
     // aerender_dir: Path to Adobe After Effects support files
     "aerender_dir": "C:\\Program Files\\Adobe\\Adobe After Effects {ae.major_version}\\Support Files",
     // image_cache_percent: optional, defaults to 50
@@ -30,7 +30,7 @@
     "encoder": "nvenc_h265",
     // encoder_preset: optional, specify the preset for the encoder.
     "encoder_preset": "quality",
-    // Directory contanin HanlebrakeCLI.exe
+    // Directory containing HandbrakeCLI.exe
     "hb_dir": "C:\\Program Files\\Handbrake"
   }
 }

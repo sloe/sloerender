@@ -1,7 +1,7 @@
 {
   "clearml_enabled": true,
   "clearml_uri": "http://clearml.murgh.net:80",
-  "event": "townbumps2024",
+  "event": "hoc2025",
   "mlflow_enabled": true,
   "mlflow_uri": "http://mlflow.murgh.net:80",
   "project_prefix": "",
