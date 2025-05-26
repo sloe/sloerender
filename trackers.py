@@ -1,4 +1,5 @@
 import logging
+from typing import Dict
 
 import clearml
 import mlflow
@@ -137,3 +138,12 @@ class Trackers:
             mlflow.log_metric(
                 key=f"{title}/{series}", value=value
             )
+
+    @classmethod
+    def add_tags(cls, tags: Dict[str, str]):
+        if cls.CLEARML_ENABLED:
+            clearml.Task.current_task().add_tags(list(tags.keys()))
+
+        if cls.MLFLOW_ENABLED:
+            for key, value in tags.items():
+                mlflow.set_tag(key.replace('=', '_'), value)

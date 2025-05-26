@@ -50,10 +50,54 @@ class RenderJob:
         self.prores_scan_result = None
         self.start_time = None
 
+    def extract_preferences(self):
+        major, minor = map(int, self.params.render.ae.condensed_version.split("."))
+        base_prefs_path = self.params.render.ae.ae_prefs_path.replace('{user}', os.getenv('USERNAME'))
+        for test_minor in range(minor + 32, minor - 1, -1):
+            test_version = f"{major}.{test_minor}"
+            ae_prefs_path = base_prefs_path.replace('{version}', test_version)
+            if os.path.isfile(ae_prefs_path):
+                LOGGER.info(f"Using AE prefs file {ae_prefs_path} for version {test_version}")
+                break
+        else:
+            raise Exception(
+                f"Unable to find AE preferences file using {base_prefs_path} and {self.params.render.ae.condensed_version}")
+
+        prefs = {}
+        with open(ae_prefs_path, 'r') as f:
+            current_section = None
+            for line in f:
+                if line.strip().startswith('['):
+                    current_section = line.strip(' []"\n')
+                elif current_section == "Concurrent Frame Rendering":
+                    if '=' in line:
+                        key, value = [x.strip().strip('"') for x in line.split('=')]
+                        prefs[key] = value
+
+        tags = {}
+        enable_cfr = prefs.get("Enable Concurrent Frame Renders")
+        num_concurrent_frames = prefs.get("Number of Concurrent Frame Renders")
+        reserved_cpu_power = prefs.get("Reserved CPU Power")
+
+        if reserved_cpu_power and int(reserved_cpu_power) > 10:
+            LOGGER.warning("Bad value for Reserved CPU Power %d", reserved_cpu_power)
+
+        if enable_cfr is None:
+            tags[f"mfr=unknown"] = True
+        elif int(enable_cfr):
+            tags[f"mfr={int(num_concurrent_frames)}"] = True
+        else:
+            tags["mfr=off"] = True
+
+        return tags
+
     def do_aerender(self):
         aerender_dir = os.path.join(
             self.params.render.ae.aerender_dir.replace('{ae.major_version}', self.params.render.ae.major_version),
             'aerender.exe')
+
+        tags = self.extract_preferences()
+        Trackers.add_tags(tags)
 
         prores_path = self.path_maker.prores_path(self.params.item.item_name, mkdir=True)
         project_path = self.path_maker.item_ae_project_path(self.params.item.ae_project)

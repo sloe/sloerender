@@ -246,3 +246,9 @@ mlruns/
 # Config files
 sloerender_env.json5
 
+# Stop files
+stop.txt
+stop-once.txt
+*-stop.txt
+*-stop-once.txt
+sempahore.txt

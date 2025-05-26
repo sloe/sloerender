@@ -6,7 +6,7 @@ authors = ["Andy Southgate <andy@slowmotionrowing.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-clearml = "^1.16.2"
+clearml = "^2.0.0"
 json5 = "^0.9.5"
 mlflow = "^2.14.1"
 nvidia-ml-py = "^12.555.43"

@@ -2,8 +2,12 @@
   "ae": {
     // major_version: Adobe After Effects major version
     "major_version": "2025",
+    // condensed_version: Adobe After Effects condensed version, in the form 25.2
+    "condensed_version": "25.2",
     // aerender_dir: Path to Adobe After Effects support files
     "aerender_dir": "C:\\Program Files\\Adobe\\Adobe After Effects {ae.major_version}\\Support Files",
+    // ae_prefs_path: Path to  preferences file
+    "ae_prefs_path": "C:\\Users\\{user}\\AppData\\Roaming\\Adobe\\After Effects\\{version}\\Adobe After Effects {version} Prefs.txt",
     // image_cache_percent: optional, defaults to 50
     "image_cache_percent": 5,
     // max_mem_percent: optional, defaults to 50

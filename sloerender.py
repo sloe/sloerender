@@ -3,6 +3,7 @@ import logging
 import os.path
 import re
 import socket
+import time
 import traceback
 
 import wakepy
@@ -26,10 +27,27 @@ class Render:
         self.options = None
 
     def do_work(self):
-
+        tags = {}
         order = division_order.DivisionOrder(self.path_maker.order_path())
 
         filtered_order = order.filter(self.options.include)
+
+        if self.options.decimate:
+            tags[f"decimate={self.options.decimate}"] = self.options.decimate
+            decimate_parts = self.options.decimate.split('/')
+            if len(decimate_parts) != 2:
+                raise ValueError("Decimate option must be in format 'n/m'")
+
+            start_index, step = map(int, decimate_parts)
+
+            decimated_order = []
+            for i, item in enumerate(filtered_order):
+                if i % step == start_index % step:
+                    decimated_order.append(item)
+
+            filtered_order = decimated_order
+            LOGGER.info("Applied decimation with pattern %s/%s", start_index, step)
+
         if self.options.reverse:
             filtered_order.reverse()
 
@@ -39,6 +57,17 @@ class Render:
                     )
 
         for order_num, order_item in enumerate(filtered_order):
+            for filename in (
+                    'stop.txt',
+                    'stop-once.txt',
+                    f"{self.path_maker.env['run_prefix']}stop.txt",
+                    f"{self.path_maker.env['run_prefix']}stop-once.txt"):
+                if os.path.isfile(filename):
+                    if 'once.txt' in filename:
+                        os.remove(filename)
+                    LOGGER.info("Stopping after %d items due to presence of %s", order_num, filename)
+                    break
+
             if self.options.stop_after:
                 if re.match(r'^[0-9]+$', self.options.stop_after):
                     if order_num >= int(self.options.stop_after):
@@ -60,18 +89,23 @@ class Render:
             if final_scan_result['valid'] and not self.options.force_final and not self.options.force_prores:
                 LOGGER.info("Skipping %s: %s", item_p.item_name, final_scan_result['message'])
             else:
-                LOGGER.info("Electing to render %s.  Contacting trackers...", order_item['name'])
+                LOGGER.info("Electing to render %s.  Contacting ClearML...", order_item['name'])
+
                 clearml_task = Trackers.clearml_task_init(
                     auto_resource_monitoring=dict(report_frequency_sec=5.0),
                     enabled=self.path_maker.env['clearml_enabled'],
                     project_name=self.path_maker.env['project_prefix'] + self.path_maker.project_name(),
                     reuse_trackers=self.options.reuse_trackers,
+                    tags=list(tags.keys()),
                     task_name=f"{self.path_maker.env['run_prefix']}{item_p.item_name}",
                 )
+                LOGGER.info("Contacting MLflow...")
+
                 mlflow_task = Trackers.mlflow_task_init(
                     enabled=self.path_maker.env['mlflow_enabled'],
                     project_name=self.path_maker.env['project_prefix'] + self.path_maker.project_name(),
                     reuse_trackers=self.options.reuse_trackers,
+                    tags=tags,
                     task_name=f"{self.path_maker.env['run_prefix']}{item_p.item_name}",
                 )
                 try:
@@ -126,6 +160,8 @@ class Render:
         parser.add_argument('--debug',
                             action='store_true',
                             help='include to set logging to debug')
+        parser.add_argument('--decimate',
+                            help='Render only a subset of items, format n/m where n is start index and m is step')
         parser.add_argument('--division',
                             default=None,
                             help='Division name, e.g. divm1')
@@ -174,8 +210,17 @@ if __name__ == '__main__':
         app = Render()
         app.parse_args()
         app.prepare_env()
+        count = 0
+        while os.path.exists("semaphore.txt"):
+            if count % 12 == 0:
+                LOGGER.info("Waiting for semaphore.txt to be removed...")
+            count += 1
+            time.sleep(5)
         try:
             app.do_work()
         except Exception as exc:
             LOGGER.error("Exception in main loop: %s", exc)
             app.do_work()
+        finally:
+            if os.path.exists("semaphore.txt"):
+                os.remove("semaphore.txt")

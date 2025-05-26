@@ -7,7 +7,9 @@ from pydantic import BaseModel, ConfigDict
 class AdobeAfterEffectsSettings(BaseModel):
     model_config = ConfigDict(extra='forbid')
     major_version: str
+    condensed_version: str
     aerender_dir: str
+    ae_prefs_path: str
     image_cache_percent: Optional[int] = 50
     max_mem_percent: Optional[int] = 50
     close: Optional[str] = "PROMPT_TO_SAVE_CHANGES"

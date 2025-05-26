@@ -214,13 +214,13 @@ files = [
 
 [[package]]
 name = "clearml"
-version = "1.18.0"
+version = "2.0.0"
 description = "ClearML - Auto-Magical Experiment Manager, Version Control, and MLOps for AI"
 optional = false
 python-versions = "*"
 groups = ["main"]
 files = [
-    {file = "clearml-1.18.0-py2.py3-none-any.whl", hash = "sha256:fe53ffcfdb0799150ad5ae1ca95bdbd568e570cbde2e35a65474e36606a899d0"},
+    {file = "clearml-2.0.0-py2.py3-none-any.whl", hash = "sha256:9047330f2da429243333f1990d28a126e69c3191402344f47d60e85339fe1c84"},
 ]
 
 [package.dependencies]
@@ -229,14 +229,14 @@ furl = ">=2.0.0"
 jsonschema = ">=2.6.0"
 numpy = ">=1.10"
 pathlib2 = ">=2.3.0"
-Pillow = ">=4.1.1"
+Pillow = {version = ">=10.3.0", markers = "python_version >= \"3.8\""}
 psutil = ">=3.4.2"
-pyjwt = {version = ">=2.4.0,<2.10.0", markers = "python_version > \"3.5\""}
+pyjwt = ">=2.4.0,<2.11.0"
 pyparsing = ">=2.0.3"
 python-dateutil = ">=2.6.1"
 PyYAML = ">=3.12"
 referencing = {version = "<0.40", markers = "python_version >= \"3.8\""}
-requests = ">=2.20.0"
+requests = {version = ">=2.32.0", markers = "python_version >= \"3.8\""}
 six = ">=1.16.0"
 urllib3 = ">=1.21.1"
 
@@ -1897,14 +1897,14 @@ typing-extensions = ">=4.6.0,<4.7.0 || >4.7.0"
 
 [[package]]
 name = "pyjwt"
-version = "2.9.0"
+version = "2.10.1"
 description = "JSON Web Token implementation in Python"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "PyJWT-2.9.0-py3-none-any.whl", hash = "sha256:3b02fb0f44517787776cf48f2ae25d8e14f300e6d7545a4315cee571a415e850"},
-    {file = "pyjwt-2.9.0.tar.gz", hash = "sha256:7e1e5b56cc735432a7369cbfa0efe50fa113ebecdc04ae6922deba8b84582d0c"},
+    {file = "PyJWT-2.10.1-py3-none-any.whl", hash = "sha256:dcdd193e30abefd5debf142f9adfcdd2b58004e644f25406ffaebd50bd98dacb"},
+    {file = "pyjwt-2.10.1.tar.gz", hash = "sha256:3cc5772eb20009233caf06e9d8a0577824723b44e6648ee0a2aedb6cf9381953"},
 ]
 
 [package.extras]
@@ -2761,4 +2761,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "74d30846ff0bbdde243cff313b1f3e6fdb2180aa51028a1a115e8e70b62092b5"
+content-hash = "1a8a8b89d1dcccb33ef0f5441606e30679d2d0a8d52e6c66b0d8e8ef4040b825"
