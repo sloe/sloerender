@@ -2,6 +2,7 @@ import datetime
 import json
 import logging
 import os
+import queue
 import re
 import time
 from collections import defaultdict
@@ -26,8 +27,13 @@ class RenderJobParams(BaseModel):
     render: render_params.RenderParams
 
 
+class RenderTimeout(Exception):
+    pass
+
+
 class RenderJob:
     def __init__(self, path_maker, job_name, params):
+        self.AE_ACTIVITY_TIMEOUT = 300
         self.path_maker = path_maker
         self.job_name = job_name
         self.params = params
@@ -39,6 +45,7 @@ class RenderJob:
         self.json_capture_on = None
         self.json_data = None
         self.json_discard_on = None
+        self.last_activity_time = None
         self.last_frame_time = None
         self.prores_scan_result = None
         self.start_time = None
@@ -58,6 +65,7 @@ class RenderJob:
             '-v', 'ERRORS_AND_PROGRESS',
             '-project', project_path,
             '-comp', self.params.item.ae_comp,
+            '-mem_usage', str(self.params.render.ae.image_cache_percent), str(self.params.render.ae.max_mem_percent),
             '-output', prores_path,  # self.params.output.destination_path,
             '-RStemplate', self.params.render.ae.render_settings_template,
             '-OMtemplate', self.params.render.ae.output_module_template
@@ -66,6 +74,10 @@ class RenderJob:
         if self.params.render.ae.mfr:
             aerender_command += [
                 '-mfr', 'ON', str(self.params.render.ae.mfr_max_cpu_percent)
+            ]
+        else:
+            aerender_command += [
+                '-mfr', 'OFF', '0'
             ]
 
         if self.params.render.ae.play_sound:
@@ -77,13 +89,26 @@ class RenderJob:
         self.ae_child_pids = []
         aerender.run()
         self.start_time = time.monotonic()
+        self.last_activity_time = time.monotonic()
         try:
             while aerender.is_alive():
-                self.service_aerender_job(aerender)
+                was_active = self.service_aerender_job(aerender)
+                if was_active:
+                    self.last_activity_time = time.monotonic()
+                else:
+                    current_time = time.monotonic()
+                    seconds_since_activity = current_time - self.last_activity_time
+                    if seconds_since_activity > self.AE_ACTIVITY_TIMEOUT - 30:
+                        LOGGER.warning(" No progress for %d seconds.  Approaching watchdog timeout",
+                                       seconds_since_activity)
+                    if seconds_since_activity > self.AE_ACTIVITY_TIMEOUT:
+                        LOGGER.error("+++ No progress for %d seconds, watchdog activated", seconds_since_activity)
+                        raise RenderTimeout("AE timed out after %d seconds of inactivity" % seconds_since_activity)
                 time.sleep(0.5)
 
         except (Exception, KeyboardInterrupt) as exp:
             aerender.kill(extra_pids=self.ae_child_pids)
+            self.delete_on_failure(prores_path)
             raise
 
         self.service_aerender_job(aerender)
@@ -93,7 +118,23 @@ class RenderJob:
             LOGGER.info(f"Successful: {self.job_name}")
         else:
             LOGGER.error(f"+++RETURN CODE %s: %s", rc, self.job_name)
+            self.delete_on_failure(prores_path)
             raise Exception(f"AE render process exited with rc={rc}")
+
+    def delete_on_failure(self, output_path):
+        if self.params.render.ae.delete_output_on_failure:
+            if os.path.exists(output_path):
+                for i in range(12):
+                    try:
+                        os.remove(output_path)
+                        LOGGER.info(f"Deleted incomplete output file: {output_path}")
+                        break
+                    except PermissionError as exc:
+                        LOGGER.warning(
+                            f"Attempt to delete incomplete output file {output_path} failed, will retry: {exc}")
+                        time.sleep(1)
+                else:
+                    raise Exception(f"Failed to delete incomplete output file: {output_path}")
 
     def handle_new_frame(self, seconds, time_str, frame_num):
         if self.last_frame_time is not None:
@@ -134,12 +175,17 @@ class RenderJob:
         self.last_frame_time = seconds
 
     def service_aerender_job(self, aerender):
+        is_active = False
+        for _ in range(100):
+            try:
+                stream_label, seconds, line = aerender.output_queue.get(block=True, timeout=5.0)
+            except queue.Empty:
+                break
 
-        while not aerender.output_queue.empty():
-            stream_label, seconds, line = aerender.output_queue.get()
             if stream_label == 'EXC':
                 raise line
             if stream_label == 'OUT':
+                is_active = True
                 match = re.match(r'PROGRESS:\s+([0-9:.])+\s+\((\d+)\)', line)
                 if match:
                     self.handle_new_frame(seconds=seconds, time_str=match.group(1), frame_num=int(match.group(2)))
@@ -152,6 +198,8 @@ class RenderJob:
         for ae_pid in [x for x in ae_pids if x not in self.ae_child_pids]:
             LOGGER.info("Captured new After Effects process with PID %d", ae_pid)
             self.ae_child_pids.append(ae_pid)
+
+        return is_active
 
     def do_hbrender(self):
 
@@ -195,6 +243,10 @@ class RenderJob:
         rc = handbrakecli.get_return_code()
         if rc == 0:
             LOGGER.info(f"Successful: {self.job_name}")
+            if self.params.render.hb.delete_intermediate_on_success:
+                file_size_gb = os.path.getsize(prores_path) / (1024 * 1024 * 1024)
+                os.remove(prores_path)
+                LOGGER.info(f"Deleted intermediate file with size {file_size_gb:.2f}GB: {prores_path}")
         else:
             LOGGER.error(f"+++RETURN CODE %s: %s", rc, self.job_name)
             raise Exception(f"HandBrakeCLI process exited with rc={rc}")
@@ -259,7 +311,11 @@ class RenderJob:
     def execute(self, force_final, force_prores):
         self.prores_scan_result = self.scan_prores()
         if not self.prores_scan_result['valid'] or force_prores:
-            self.do_aerender()
+            try:
+                self.do_aerender()
+            except RenderTimeout:
+                LOGGER.error(f"Retrying due to render timeout")
+                self.do_aerender()
 
         self.prores_scan_result = self.scan_prores()
 

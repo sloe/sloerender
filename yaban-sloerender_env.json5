@@ -1,0 +1,14 @@
+{
+  "clearml_enabled": true,
+  "clearml_uri": "http://clearml.murgh.net:80",
+  "event": "hoc2025",
+  "mlflow_enabled": true,
+  "mlflow_uri": "http://mlflow.murgh.net:80",
+  "project_prefix": "",
+  "run_prefix": "yaban-",
+  "smr_root": "C:\\smr",
+  "smr_scratch_prores": "C:\\scratch\\prores-output",
+  "smr_scratch_mp4": "C:\\scratch\\ae-output",
+  "variant": "",
+  "variant_has_suffix": false
+}

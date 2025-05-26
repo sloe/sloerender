@@ -5,9 +5,9 @@
     // aerender_dir: Path to Adobe After Effects support files
     "aerender_dir": "C:\\Program Files\\Adobe\\Adobe After Effects {ae.major_version}\\Support Files",
     // image_cache_percent: optional, defaults to 50
-    "image_cache_percent": 50,
+    "image_cache_percent": 5,
     // max_mem_percent: optional, defaults to 50
-    "max_mem_percent": 50,
+    "max_mem_percent": 90,
     // close: optional, defaults to PROMPT_TO_SAVE_CHANGES
     // DO_NOT_SAVE_CHANGES, SAVE_CHANGES or PROMPT_TO_SAVE_CHANGES
     "close": "DO_NOT_SAVE_CHANGES",
@@ -17,9 +17,10 @@
     "multi_machine_settings": "",
     // mfr: optional, multi-frame rendering setting
     "mfr": true,
-    "mfr_max_cpu_percent": "100",
+    "mfr_max_cpu_percent": 100,
     "render_settings_template": "Best Settings",
-    "output_module_template": "Sloe ProRes"
+    "output_module_template": "Sloe ProRes",
+    "delete_output_on_failure": true
   },
   "hb": {
     // bitrate: optional, specify either quality or bitrate. Measured in kbps.
@@ -31,6 +32,7 @@
     // encoder_preset: optional, specify the preset for the encoder.
     "encoder_preset": "quality",
     // Directory containing HandbrakeCLI.exe
-    "hb_dir": "C:\\Program Files\\Handbrake"
+    "hb_dir": "C:\\Program Files\\Handbrake",
+    "delete_intermediate_on_success": true
   }
 }

@@ -14,9 +14,10 @@ class AdobeAfterEffectsSettings(BaseModel):
     play_sound: Optional[bool] = True
     multi_machine_settings: Optional[str] = ""
     mfr: Optional[bool] = True
-    mfr_max_cpu_percent: str
+    mfr_max_cpu_percent: Optional[int] = 100
     render_settings_template: str
     output_module_template: str
+    delete_output_on_failure: bool
 
 
 class HandbrakeSettings(BaseModel):
@@ -27,6 +28,7 @@ class HandbrakeSettings(BaseModel):
     encoder: Optional[str] = "nvenc_h265"
     encoder_preset: Optional[str] = "quality"
     hb_dir: str
+    delete_intermediate_on_success: bool
 
 
 class RenderParams(BaseModel):

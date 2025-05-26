@@ -60,7 +60,7 @@ class Render:
             if final_scan_result['valid'] and not self.options.force_final and not self.options.force_prores:
                 LOGGER.info("Skipping %s: %s", item_p.item_name, final_scan_result['message'])
             else:
-                LOGGER.info("Contacting trackers...")
+                LOGGER.info("Electing to render %s.  Contacting trackers...", order_item['name'])
                 clearml_task = Trackers.clearml_task_init(
                     auto_resource_monitoring=dict(report_frequency_sec=5.0),
                     enabled=self.path_maker.env['clearml_enabled'],
@@ -167,11 +167,15 @@ class Render:
 
 
 if __name__ == '__main__':
-    logging.basicConfig(format='%(asctime)s.%(msecs)03d %(name)s:%(levelname)s:%(message)s',
+    logging.basicConfig(format='%(asctime)s.%(msecs)03d %(name)s:%(levelname)s: %(message)s',
                         datefmt='%H:%M:%S',
                         level=logging.INFO)
     with wakepy.keep.running(on_fail="warn"):
         app = Render()
         app.parse_args()
         app.prepare_env()
-        app.do_work()
+        try:
+            app.do_work()
+        except Exception as exc:
+            LOGGER.error("Exception in main loop: %s", exc)
+            app.do_work()
